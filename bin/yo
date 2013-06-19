@@ -11,10 +11,12 @@ var Insight = require('insight');
 
 var opts = nopt({
   help: Boolean,
-  version: Boolean
+  version: Boolean,
+  prefix: String
 }, {
   h: '--help',
-  v: '--version'
+  v: '--version',
+  p: '--prefix'
 });
 
 var args = opts.argv.remain;
@@ -44,7 +46,7 @@ More info: yeoman.io/insight.html & http://yeoman.io'.yellow + '\n\
 
 
 function init() {
-  var env = require('yeoman-generator')();
+  var env = require('yeoman-generator')(undefined, { prefix: opts.prefix });
 
   // register each built-in generator individually
   env.plugins('node_modules', __dirname);
@@ -107,7 +109,7 @@ if (!process.env.yeoman_test && opts.insight !== false) {
 
 if (!process.env.yeoman_test && opts['update-notifier'] !== false) {
   var notifier = updateNotifier({
-    packagePath: '../package'
+    packagePath: '../package',
   });
 
   if (notifier.update) {
