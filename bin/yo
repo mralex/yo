@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 'use strict';
 var fs = require('fs');
+var glob = require('glob');
 var path = require('path');
 var nopt = require('nopt');
 var colors = require('colors');
@@ -12,11 +13,9 @@ var Insight = require('insight');
 var opts = nopt({
   help: Boolean,
   version: Boolean,
-  prefix: String
 }, {
   h: '--help',
   v: '--version',
-  p: '--prefix'
 });
 
 var args = opts.argv.remain;
@@ -46,10 +45,22 @@ More info: yeoman.io/insight.html & http://yeoman.io'.yellow + '\n\
 
 
 function init() {
-  var env = require('yeoman-generator')(undefined, { prefix: opts.prefix });
+  var env = require('yeoman-generator')();
 
   // register each built-in generator individually
   env.plugins('node_modules', __dirname);
+
+  // Go one level deep into node_modules to search for generators
+  _.unique(env.paths).forEach(function(path) {
+    if (path.indexOf('node_modules') > 0) {
+      glob.sync('*', { cwd: path }).forEach(function(filename) {
+        // Exclude actual generator modules
+        if (filename.indexOf('generator-') < 0) {
+          env.plugins(filename, path);
+        }
+      });
+    }
+  });
 
   // alias any single namespace to `*:all` and `webapp` namespace specifically
   // to webapp:app.
